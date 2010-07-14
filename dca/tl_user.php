@@ -28,8 +28,8 @@
 /**
  * Palettes
  */
-$GLOBALS['TL_DCA']['tl_user']['palettes']['extend'] = str_replace('modules;', 'modules,contentelements;', $GLOBALS['TL_DCA']['tl_user']['palettes']['extend']);
-$GLOBALS['TL_DCA']['tl_user']['palettes']['custom'] = str_replace('modules;', 'modules,contentelements;', $GLOBALS['TL_DCA']['tl_user']['palettes']['custom']);
+$GLOBALS['TL_DCA']['tl_user']['palettes']['extend'] = preg_replace('@([,;])(modules[,;])@', '$1contentelements,$2', $GLOBALS['TL_DCA']['tl_user']['palettes']['extend']);
+$GLOBALS['TL_DCA']['tl_user']['palettes']['custom'] = preg_replace('@([,;])(modules[,;])@', '$1contentelements,$2', $GLOBALS['TL_DCA']['tl_user']['palettes']['custom']);
 
 
 /**

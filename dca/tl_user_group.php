@@ -28,7 +28,7 @@
 /**
  * Palettes
  */
-$GLOBALS['TL_DCA']['tl_user_group']['palettes']['default'] = str_replace('modules;', 'modules,contentelements;', $GLOBALS['TL_DCA']['tl_user_group']['palettes']['default']);
+$GLOBALS['TL_DCA']['tl_user_group']['palettes']['default'] = preg_replace('@([,;])(modules[,;])@', '$1contentelements,$2', $GLOBALS['TL_DCA']['tl_user_group']['palettes']['default']);
 
 
 /**
