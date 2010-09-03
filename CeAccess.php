@@ -1,13 +1,15 @@
 <?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
 
 /**
- * TYPOlight webCMS
- * Copyright (C) 2005 Leo Feyer
+ * Contao Open Source CMS
+ * Copyright (C) 2005-2010 Leo Feyer
+ *
+ * Formerly known as TYPOlight Open Source CMS.
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation, either
- * version 2.1 of the License, or (at your option) any later version.
+ * version 3 of the License, or (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -16,20 +18,24 @@
  * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program. If not, please visit the Free
- * Software Foundation website at http://www.gnu.org/licenses/.
+ * Software Foundation website at <http://www.gnu.org/licenses/>.
  *
  * PHP version 5
- * @copyright  Andreas Schempp 2009
+ * @copyright  Andreas Schempp 2009-2010
  * @author     Andreas Schempp <andreas@schempp.ch>
  * @license    http://opensource.org/licenses/lgpl-3.0.html
+ * @version    $Id$
  */
 
 
 class CeAccess extends Backend
 {
+
 	/**
 	 * Return all content elements as array
-	 * @return array
+	 *
+	 * @access	public
+	 * @return	array
 	 */
 	public function getContentElements()
 	{
@@ -46,8 +52,19 @@ class CeAccess extends Backend
 		return $arrElements;
 	}
 	
+	
+	/**
+	 * Remove available content elements
+	 *
+	 * @access	public
+	 * @param	object
+	 * @return	void
+	 */
 	public function filterContentElements($dc)
 	{
+		if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
+			return;
+			
 		$this->Import('BackendUser', 'User');
 		
 		if ($this->User->isAdmin)
@@ -105,25 +122,56 @@ class CeAccess extends Backend
 		}
 		
 		
-		if (strlen($this->Input->get('act')) && $this->Input->get('act') != 'create' && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
+		$session = $this->Session->getData();
+
+		// Set allowed content element IDs (edit multiple)
+		if (is_array($session['CURRENT']['IDS']) && count($session['CURRENT']['IDS']))
+		{
+			$session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+		}
+
+		// Set allowed clipboard IDs
+		if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
+		{
+			$session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+		}
+		
+		// Overwrite session
+		$this->Session->setData($session);
+		
+		
+		if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')))
 		{
 			$objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
 										 ->limit(1)
-										  ->execute($this->Input->get('id'));
+										  ->execute($dc->id);
 									  
 			if ($objElement->numRows && in_array($objElement->type, $arrElements))
 			{
-				$this->log('Attempt to access restricted content element "' . $element->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
-				$this->redirect('typolight/main.php?act=error');
+				$this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
+				$this->redirect($this->Environment->script.'?act=error');
 			}
 		}
 	}
 	
 	
+	/**
+	 * Hide buttons for disabled content elements
+	 *
+	 * @access	public
+	 * @param	array
+	 * @param	string
+	 * @param	string
+	 * @param	string
+	 * @param	string
+	 * @param	string
+	 * @return	string
+	 */
 	public function hideButton($row, $href, $label, $title, $icon, $attributes)
 	{
+		$this->Import('BackendUser', 'User');
+		
 		return ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
 	}
-	
 }
 

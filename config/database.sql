@@ -26,3 +26,4 @@ CREATE TABLE `tl_user` (
 CREATE TABLE `tl_user_group` (
   `contentelements` blob NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
