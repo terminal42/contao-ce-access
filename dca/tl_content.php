@@ -40,6 +40,6 @@ $GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('CeAcces
 $GLOBALS['TL_DCA']['tl_content']['list']['operations']['edit']['button_callback']	= array('CeAccess', 'hideButton');
 $GLOBALS['TL_DCA']['tl_content']['list']['operations']['copy']['button_callback']	= array('CeAccess', 'hideButton');
 $GLOBALS['TL_DCA']['tl_content']['list']['operations']['cut']['button_callback']	= array('CeAccess', 'hideButton');
-$GLOBALS['TL_DCA']['tl_content']['list']['operations']['delete']['button_callback']	= array('CeAccess', 'hideButton');
-$GLOBALS['TL_DCA']['tl_content']['list']['operations']['toggle']['button_callback']	= array('CeAccess', 'hideButton');
+$GLOBALS['TL_DCA']['tl_content']['list']['operations']['delete']['button_callback']	= array('CeAccess', 'deleteButton');
+$GLOBALS['TL_DCA']['tl_content']['list']['operations']['toggle']['button_callback']	= array('CeAccess', 'toggleButton');
 
