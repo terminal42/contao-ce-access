@@ -171,8 +171,6 @@ class CeAccess extends Backend
 	{
 		$this->Import('BackendUser', 'User');
 		
-		$this->User->contentelements = deserialize($this->User->contentelements, true);
-		
 		return ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
 	}
 	
@@ -180,8 +178,6 @@ class CeAccess extends Backend
 	public function deleteButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		
-		$this->User->contentelements = deserialize($this->User->contentelements, true);
 		
 		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
 		{
@@ -196,8 +192,6 @@ class CeAccess extends Backend
 	public function toggleButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		
-		$this->User->contentelements = deserialize($this->User->contentelements, true);
 		
 		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
 		{
