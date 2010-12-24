@@ -138,9 +138,8 @@ class CeAccess extends Backend
 		
 		// Overwrite session
 		$this->Session->setData($session);
-		
-		
-		if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')))
+        
+        if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
 		{
 			$objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
 										 ->limit(1)
