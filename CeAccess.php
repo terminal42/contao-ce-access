@@ -70,13 +70,11 @@ class CeAccess extends Backend
 		if ($this->User->isAdmin)
 			return;
 		
-		$arrElements = deserialize($this->User->contentelements);
-		
-		if (!is_array($arrElements))
-			$arrElements = array();
-		
+		$arrElements = deserialize($this->User->contentelements, true);
+
 		$arrGroups = $this->User->groups;
-		if (count($arrGroups) > 0)
+		// check if we have groups or only the user attributes
+		if (count($arrGroups) > 0 && $arrGroups[0] != '')
 		{
 			$objGroups = $this->Database->execute("SELECT * FROM tl_user_group WHERE id IN (" . implode(',', $arrGroups) . ")");
 			
@@ -143,8 +141,8 @@ class CeAccess extends Backend
 		{
 			$objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
 										 ->limit(1)
-										  ->execute($dc->id);
-									  
+										 ->execute($dc->id);
+
 			if ($objElement->numRows && in_array($objElement->type, $arrElements))
 			{
 				$this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
@@ -152,8 +150,8 @@ class CeAccess extends Backend
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Hide buttons for disabled content elements
 	 *
@@ -191,13 +189,13 @@ class CeAccess extends Backend
 	public function toggleButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		
+
 		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
 		{
 			$objCallback = new tl_content();
 			return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
 		}
-		
+
 		return '';
 	}
 }
