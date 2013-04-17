@@ -8,22 +8,21 @@
 -- **********************************************************
 
 
--- 
+--
 -- Table `tl_user`
--- 
+--
 
 CREATE TABLE `tl_user` (
-  `contentelements` blob NULL,
+  `elements` blob NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 -- --------------------------------------------------------
 
--- 
+--
 -- Table `tl_user_group`
--- 
+--
 
 CREATE TABLE `tl_user_group` (
-  `contentelements` blob NULL,
+  `elements` blob NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
