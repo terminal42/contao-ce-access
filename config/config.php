@@ -30,4 +30,4 @@
 /**
  * Inherit group permissions
  */
-$GLOBALS['TL_PERMISSIONS'][] = 'contentelements';
+$GLOBALS['TL_PERMISSIONS'][] = 'elements';

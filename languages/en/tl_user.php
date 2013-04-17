@@ -30,5 +30,5 @@
 /**
  * Fields
  */
-$GLOBALS['TL_LANG']['tl_user']['contentelements'] = array('Disable Content Elements', 'Please select the content elements you want to DISABLE.');
+$GLOBALS['TL_LANG']['tl_user']['elements'] = array('Enable Content Elements', 'Please select the content elements you want to ENABLE.');
 

@@ -30,4 +30,4 @@
 /**
  * Extension folder
  */
-$GLOBALS['TL_LANG']['MOD']['ce-access']		= array('Zugriffsrechte für Inhaltselement', 'Deaktivieren Sie einzelne Inhaltselement für Benutzer/Gruppen.');
+$GLOBALS['TL_LANG']['MOD']['ce-access']		= array('Zugriffsrechte für Inhaltselement', 'Aktivieren Sie einzelne Inhaltselement für Benutzer/Gruppen.');

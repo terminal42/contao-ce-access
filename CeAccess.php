@@ -68,10 +68,10 @@ class CeAccess extends Backend
 
 		if ($this->User->isAdmin)
 			return;
-		$arrElements = deserialize($this->User->contentelements, true);
 
-
+		$arrElements = deserialize($this->User->elements, true);
 		$arrGroups = $this->User->groups;
+
 		// check if we have groups or only the user attributes
 		if (count($arrGroups) > 0 && $arrGroups[0] != '')
 		{
@@ -79,24 +79,24 @@ class CeAccess extends Backend
 
 			while( $objGroups->next() )
 			{
-				$arrGroupElements = deserialize($objGroups->contentelements);
-				
-				if (is_array($arrGroupElements))
+				// add allowed elements
+				$arrAllowedGroupElements = deserialize($objGroups->elements);
+
+				if (is_array($arrAllowedGroupElements))
 				{
-					$arrElements = array_merge($arrElements, $arrGroupElements);
+					$arrElements = array_merge($arrElements, $arrAllowedGroupElements);
 				}
 			}
 		}
 
 		array_unique($arrElements);
-		$this->User->contentelements = $arrElements;
-
+		$this->User->elements = $arrElements;
 
 		foreach( $arrElements as $element )
 		{
 			foreach( $GLOBALS['TL_CTE'] as $group => $v )
 			{
-				if (isset($GLOBALS['TL_CTE'][$group][$element]))
+				if (!isset($GLOBALS['TL_CTE'][$group][$element]))
 					unset($GLOBALS['TL_CTE'][$group][$element]);
 
 				if (!count($GLOBALS['TL_CTE'][$group]))
@@ -167,16 +167,16 @@ class CeAccess extends Backend
 	public function hideButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		return ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
 
+		return ($this->User->isAdmin || !in_array($row['type'], $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
 	}
 
 
 	public function deleteButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
 
+		if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
 		{
 			$objCallback = new tl_content();
 			return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
@@ -190,7 +190,7 @@ class CeAccess extends Backend
 	{
 		$this->Import('BackendUser', 'User');
 
-		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
+		if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
 		{
 			$objCallback = new tl_content();
 			return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
