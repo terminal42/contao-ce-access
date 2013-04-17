@@ -8,9 +8,9 @@
 -- **********************************************************
 
 
--- 
+--
 -- Table `tl_user`
--- 
+--
 
 CREATE TABLE `tl_user` (
   `contentelements` blob NULL,
@@ -19,11 +19,10 @@ CREATE TABLE `tl_user` (
 
 -- --------------------------------------------------------
 
--- 
+--
 -- Table `tl_user_group`
--- 
+--
 
 CREATE TABLE `tl_user_group` (
   `contentelements` blob NULL,
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-

@@ -1,8 +1,8 @@
-<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
+<?php
 
 /**
  * Contao Open Source CMS
- * Copyright (C) 2005-2010 Leo Feyer
+ * Copyright (C) 2005-2012 Leo Feyer
  *
  * Formerly known as TYPOlight Open Source CMS.
  *
@@ -10,21 +10,20 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program. If not, please visit the Free
  * Software Foundation website at <http://www.gnu.org/licenses/>.
  *
  * PHP version 5
- * @copyright  Andreas Schempp 2009-2010
- * @author     Andreas Schempp <andreas@schempp.ch>
+ * @copyright  terminal42 gmbh 2009-2013
+ * @author     Andreas Schempp <andreas.schempp@terminal42.ch>
  * @license    http://opensource.org/licenses/lgpl-3.0.html
- * @version    $Id$
  */
 
 
@@ -51,8 +50,8 @@ class CeAccess extends Backend
 
 		return $arrElements;
 	}
-	
-	
+
+
 	/**
 	 * Remove available content elements
 	 *
@@ -64,20 +63,20 @@ class CeAccess extends Backend
 	{
 		if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
 			return;
-			
+
 		$this->Import('BackendUser', 'User');
-		
+
 		if ($this->User->isAdmin)
 			return;
-		
 		$arrElements = deserialize($this->User->contentelements, true);
+
 
 		$arrGroups = $this->User->groups;
 		// check if we have groups or only the user attributes
 		if (count($arrGroups) > 0 && $arrGroups[0] != '')
 		{
 			$objGroups = $this->Database->execute("SELECT * FROM tl_user_group WHERE id IN (" . implode(',', $arrGroups) . ")");
-			
+
 			while( $objGroups->next() )
 			{
 				$arrGroupElements = deserialize($objGroups->contentelements);
@@ -88,29 +87,30 @@ class CeAccess extends Backend
 				}
 			}
 		}
-		
+
 		array_unique($arrElements);
 		$this->User->contentelements = $arrElements;
-		
+
+
 		foreach( $arrElements as $element )
 		{
 			foreach( $GLOBALS['TL_CTE'] as $group => $v )
 			{
 				if (isset($GLOBALS['TL_CTE'][$group][$element]))
 					unset($GLOBALS['TL_CTE'][$group][$element]);
-					
+
 				if (!count($GLOBALS['TL_CTE'][$group]))
 					unset($GLOBALS['TL_CTE'][$group]);
 			}
 		}
-		
+
 		// No content elements possible, disable new elements
 		if (!count($GLOBALS['TL_CTE']))
 		{
 			$GLOBALS['TL_DCA']['tl_content']['config']['closed'] = true;
 			$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['panelLayout'] = '';
 		}
-		
+
 		// Default element has been hidden
 		elseif (in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements))
 		{
@@ -118,8 +118,8 @@ class CeAccess extends Backend
 			$GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($GLOBALS['TL_CTE']));
 			$GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($GLOBALS['TL_CTE']))];
 		}
-		
-		
+
+
 		$session = $this->Session->getData();
 
 		// Set allowed content element IDs (edit multiple)
@@ -133,10 +133,10 @@ class CeAccess extends Backend
 		{
 			$session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
 		}
-		
+
 		// Overwrite session
 		$this->Session->setData($session);
-        
+
         if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
 		{
 			$objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
@@ -167,25 +167,25 @@ class CeAccess extends Backend
 	public function hideButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		
 		return ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
+
 	}
-	
-	
+
+
 	public function deleteButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
-		
 		if ($this->User->isAdmin || !in_array($row['type'], $this->User->contentelements))
+
 		{
 			$objCallback = new tl_content();
 			return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
 		}
-		
+
 		return '';
 	}
-	
-	
+
+
 	public function toggleButton($row, $href, $label, $title, $icon, $attributes)
 	{
 		$this->Import('BackendUser', 'User');
@@ -199,4 +199,3 @@ class CeAccess extends Backend
 		return '';
 	}
 }
-
