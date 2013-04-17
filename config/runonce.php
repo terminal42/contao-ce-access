@@ -69,7 +69,7 @@ class CeAccessRunonce extends Controller
 
                 if (!empty($arrElements) && is_array($arrElements)) {
 
-                    $arrElements = array_diff($this->getElements(), $arrElements);
+                    $arrElements = array_diff(CeAccess::getContentElements(), $arrElements);
 
                     $this->Database->prepare("UPDATE $strTable SET elements=? WHERE id=?")->execute(serialize($arrElements), $objResult->id);
                 }
@@ -80,25 +80,6 @@ class CeAccessRunonce extends Controller
 
             $this->log('Inverted access logic for content elements in ' . $strTable, __METHOD__, TL_ACCESS);
         }
-    }
-
-
-    private function getElements()
-    {
-        static $arrElements;
-
-        if (null === $arrElements) {
-
-            $arrElements = array();
-
-            foreach ($GLOBALS['TL_CTE'] as $k => $v) {
-                foreach (array_keys($v) as $kk) {
-                    $arrElements[] = $kk;
-                }
-            }
-        }
-
-        return $arrElements;
     }
 }
 

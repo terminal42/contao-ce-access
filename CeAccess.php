@@ -30,27 +30,6 @@
 class CeAccess extends Backend
 {
 
-    /**
-     * Return all content elements as array
-     *
-     * @access    public
-     * @return    array
-     */
-    public function getContentElements()
-    {
-        $arrElements = array();
-
-        foreach ($GLOBALS['TL_CTE'] as $k=>$v)
-        {
-            foreach (array_keys($v) as $kk)
-            {
-                $arrElements[] = $kk;
-            }
-        }
-
-        return $arrElements;
-    }
-
 
     /**
      * Remove available content elements
@@ -197,5 +176,27 @@ class CeAccess extends Backend
         }
 
         return '';
+    }
+
+    /**
+     * Return all content elements as array
+     * @return    array
+     */
+    public static function getContentElements()
+    {
+        static $arrElements;
+
+        if (null === $arrElements) {
+
+            $arrElements = array();
+
+            foreach ($GLOBALS['TL_CTE'] as $k => $v) {
+                foreach (array_keys($v) as $kk) {
+                    $arrElements[] = $kk;
+                }
+            }
+        }
+
+        return $arrElements;
     }
 }
