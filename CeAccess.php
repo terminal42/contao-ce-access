@@ -47,74 +47,69 @@ class CeAccess extends Backend
      */
     public function filterContentElements($dc)
     {
-        if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
-            return;
-
         if ($this->User->isAdmin)
             return;
 
         $arrElements = deserialize($this->User->elements, true);
+        $arrKeys = array_flip($arrElements);
+        $arrConfig = $GLOBALS['TL_CTE'];
 
-        array_unique($arrElements);
-        $this->User->elements = $arrElements;
-
-        foreach( $arrElements as $element )
+        foreach ($arrConfig as $group => $v)
         {
-            foreach( $GLOBALS['TL_CTE'] as $group => $v )
-            {
-                if (!isset($GLOBALS['TL_CTE'][$group][$element]))
-                    unset($GLOBALS['TL_CTE'][$group][$element]);
+            $arrConfig[$group] = array_intersect_key($arrConfig[$group], $arrKeys);
 
-                if (!count($GLOBALS['TL_CTE'][$group]))
-                    unset($GLOBALS['TL_CTE'][$group]);
+            if (empty($arrConfig[$group])) {
+                unset($arrConfig[$group]);
             }
         }
 
         // No content elements possible, disable new elements
-        if (!count($GLOBALS['TL_CTE']))
-        {
+        if (empty($arrConfig)) {
             $GLOBALS['TL_DCA']['tl_content']['config']['closed'] = true;
-            $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['panelLayout'] = '';
+            $GLOBALS['TL_DCA']['tl_content']['config']['notEditable'] = true;
+            $GLOBALS['TL_DCA']['tl_content']['config']['notDeletable'] = true;
+            unset($GLOBALS['TL_DCA']['tl_content']['list']['global_operations']['all']);
         }
 
         // Default element has been hidden
-        elseif (in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements))
-        {
-            reset($GLOBALS['TL_CTE']);
-            $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($GLOBALS['TL_CTE']));
-            $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($GLOBALS['TL_CTE']))];
+        elseif (!in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements)) {
+            reset($arrConfig);
+            $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($arrConfig));
+            $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
         }
 
+        if ($this->Input->get('act') != '' && $this->Input->get('act') != 'select') {
 
-        $session = $this->Session->getData();
+            $GLOBALS['TL_CTE'] = $arrConfig;
+            $session = $this->Session->getData();
 
-        // Set allowed content element IDs (edit multiple)
-        if (is_array($session['CURRENT']['IDS']) && count($session['CURRENT']['IDS']))
-        {
-            $session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
-        }
+            // Set allowed content element IDs (edit multiple)
+            if (!empty($session['CURRENT']['IDS']) && is_array($session['CURRENT']['IDS']))
+            {
+                $session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+            }
 
-        // Set allowed clipboard IDs
-        if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
-        {
-            $session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
-        }
+            // Set allowed clipboard IDs
+            if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
+            {
+                $session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+            }
 
-        // Overwrite session
-        $this->Session->setData($session);
+            // Overwrite session
+            $this->Session->setData($session);
 
-        if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
-        {
+            if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
+            {
                 $objElement = $this->Database->prepare("SELECT type FROM tl_content WHERE id=?")
-                                         ->limit(1)
-                                         ->execute($dc->id);
+                                             ->limit(1)
+                                             ->execute($dc->id);
 
                 if ($objElement->numRows && !in_array($objElement->type, $arrElements)) {
-                $this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
-                $this->redirect($this->Environment->script.'?act=error');
+                    $this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
+                    $this->redirect($this->Environment->script.'?act=error');
+                }
             }
         }
-    }
     }
 
 
