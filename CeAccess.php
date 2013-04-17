@@ -42,7 +42,7 @@ class CeAccess extends Backend
      * Remove available content elements
      *
      * @access    public
-     * @param    object
+     * @param     object
      * @return    void
      */
     public function filterContentElements($dc)
@@ -105,30 +105,21 @@ class CeAccess extends Backend
 
         if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
         {
-            $objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
+                $objElement = $this->Database->prepare("SELECT type FROM tl_content WHERE id=?")
                                          ->limit(1)
                                          ->execute($dc->id);
 
-            if ($objElement->numRows && in_array($objElement->type, $arrElements))
-            {
+                if ($objElement->numRows && !in_array($objElement->type, $arrElements)) {
                 $this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
                 $this->redirect($this->Environment->script.'?act=error');
             }
         }
     }
+    }
 
 
     /**
      * Hide buttons for disabled content elements
-     *
-     * @access    public
-     * @param    array
-     * @param    string
-     * @param    string
-     * @param    string
-     * @param    string
-     * @param    string
-     * @return    string
      */
     public function hideButton($row, $href, $label, $title, $icon, $attributes)
     {
@@ -136,6 +127,9 @@ class CeAccess extends Backend
     }
 
 
+    /**
+     * Hide delete button for disabled content elements
+     */
     public function deleteButton($row, $href, $label, $title, $icon, $attributes)
     {
         if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
@@ -148,6 +142,9 @@ class CeAccess extends Backend
     }
 
 
+    /**
+     * Hide toggle button for disabled content elements
+     */
     public function toggleButton($row, $href, $label, $title, $icon, $attributes)
     {
         if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
