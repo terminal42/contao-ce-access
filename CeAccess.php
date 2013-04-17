@@ -132,13 +132,13 @@ class CeAccess extends Backend
      */
     public function hideButton($row, $href, $label, $title, $icon, $attributes)
     {
-        return ($this->User->isAdmin || !in_array($row['type'], $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
+        return ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
     }
 
 
     public function deleteButton($row, $href, $label, $title, $icon, $attributes)
     {
-        if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
+        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
         {
             $objCallback = new tl_content();
             return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
@@ -150,7 +150,7 @@ class CeAccess extends Backend
 
     public function toggleButton($row, $href, $label, $title, $icon, $attributes)
     {
-        if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
+        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
         {
             $objCallback = new tl_content();
             return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
