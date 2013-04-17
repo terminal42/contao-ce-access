@@ -30,6 +30,13 @@
 class CeAccess extends Backend
 {
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->import('BackendUser', 'User');
+    }
+
 
     /**
      * Remove available content elements
@@ -42,8 +49,6 @@ class CeAccess extends Backend
     {
         if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
             return;
-
-        $this->Import('BackendUser', 'User');
 
         if ($this->User->isAdmin)
             return;
@@ -145,16 +150,12 @@ class CeAccess extends Backend
      */
     public function hideButton($row, $href, $label, $title, $icon, $attributes)
     {
-        $this->Import('BackendUser', 'User');
-
         return ($this->User->isAdmin || !in_array($row['type'], $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
     }
 
 
     public function deleteButton($row, $href, $label, $title, $icon, $attributes)
     {
-        $this->Import('BackendUser', 'User');
-
         if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
         {
             $objCallback = new tl_content();
@@ -167,8 +168,6 @@ class CeAccess extends Backend
 
     public function toggleButton($row, $href, $label, $title, $icon, $attributes)
     {
-        $this->Import('BackendUser', 'User');
-
         if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
         {
             $objCallback = new tl_content();
