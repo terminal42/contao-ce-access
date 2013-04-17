@@ -54,24 +54,6 @@ class CeAccess extends Backend
             return;
 
         $arrElements = deserialize($this->User->elements, true);
-        $arrGroups = $this->User->groups;
-
-        // check if we have groups or only the user attributes
-        if (count($arrGroups) > 0 && $arrGroups[0] != '')
-        {
-            $objGroups = $this->Database->execute("SELECT * FROM tl_user_group WHERE id IN (" . implode(',', $arrGroups) . ")");
-
-            while( $objGroups->next() )
-            {
-                // add allowed elements
-                $arrAllowedGroupElements = deserialize($objGroups->elements);
-
-                if (is_array($arrAllowedGroupElements))
-                {
-                    $arrElements = array_merge($arrElements, $arrAllowedGroupElements);
-                }
-            }
-        }
 
         array_unique($arrElements);
         $this->User->elements = $arrElements;
