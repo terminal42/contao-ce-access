@@ -30,90 +30,76 @@
 class CeAccessRunonce extends Controller
 {
 
-    public function run()
+    public function __construct()
     {
+        parent::__construct();
+
         $this->import('Database');
+    }
 
-        $arrElements = array();
-        foreach ($GLOBALS['TL_CTE'] as $k=>$v)
+
+    /**
+     * Convert negative-selection of column 'contentelements' in tl_user_group and tl_user to additive selection in the column 'elements'.
+     */
+    public static function run()
+    {
+        $objCeAccess = new self();
+
+        $objCeAccess->invertElements('tl_user');
+        $objCeAccess->invertElements('tl_user_group');
+    }
+
+
+    /**
+     * Invert field logic for given table (tl_user or tl_user_group)
+     * @param   string
+     */
+    private function invertElements($strTable)
+    {
+        if ($this->Database->fieldExists('contentelements', $strTable) && !$this->Database->fieldExists('elements', $strTable))
         {
-            foreach (array_keys($v) as $kk)
+            // Add the new field to the database table
+            $this->Database->query("ALTER TABLE $strTable ADD COLUMN elements blob NULL");
+
+            $objResult = $this->Database->execute("SELECT id, contentelements FROM $strTable WHERE contentelements!=''");
+
+            while ($objResult->next())
             {
-                $arrElements[] = $kk;
-            }
-        }
+                $arrElements = deserialize($objResult->contentelements);
 
-        // update database
-        // convert negative-selection of column 'contentelements' in tl_user_group and tl_user to additive selection in the column 'elements'.
+                if (!empty($arrElements) && is_array($arrElements)) {
 
-        if( $this->Database->fieldExists('contentelements', 'tl_user') )
-        {
-            if( !$this->Database->fieldExists('elements', 'tl_user') )
-            {
-                $this->Database->query("ALTER TABLE tl_user ADD COLUMN elements blob NULL");
-            }
+                    $arrElements = array_diff($this->getElements(), $arrElements);
 
-            $objElements = $this->Database->execute("SELECT * FROM tl_user WHERE contentelements!=''");
-            $arrAllowedElements = array();
-
-            while( $objElements->next() )
-            {
-                $arrContentElements = deserialize($objElements->contentelements);
-                if (is_array($arrContentElements))
-                {
-                    $arrAllowedElements[$objElements->id] = array();
-                    foreach($arrElements as $strElement)
-                    {
-                        if( !in_array($strElement, $arrContentElements) )
-                        {
-                            $arrAllowedElements[$objElements->id][] = $strElement;
-                        }
-                    }
-                    $strElements = serialize($arrAllowedElements[$objElements->id]);
-                    $objUpdate = $this->Database->prepare("UPDATE tl_user SET elements=? WHERE id=? ")->execute($strElements, $objElements->id);
+                    $this->Database->prepare("UPDATE $strTable SET elements=? WHERE id=?")->execute(serialize($arrElements), $objResult->id);
                 }
             }
 
-            $this->Database->execute("ALTER TABLE tl_user DROP contentelements");
+            // Delete old field to make sure the runonce is not executed again
+            $this->Database->execute("ALTER TABLE $strTable DROP contentelements");
+
+            $this->log('Inverted access logic for content elements in ' . $strTable, __METHOD__, TL_ACCESS);
         }
+    }
 
 
-        if( $this->Database->fieldExists('contentelements', 'tl_user_group') )
-        {
-            if( !$this->Database->fieldExists('elements', 'tl_user_group') )
-            {
-                $this->Database->query("ALTER TABLE tl_user_group ADD COLUMN elements blob NULL");
-            }
+    private function getElements()
+    {
+        static $arrElements;
 
-            $objElements = $this->Database->execute("SELECT * FROM tl_user_group WHERE contentelements!=''");
-            $arrAllowedGroupElements = array();
+        if (null === $arrElements) {
 
-            while( $objElements->next() )
-            {
-                $arrContentGroupElements = deserialize($objElements->contentelements);
-                if (is_array($arrContentGroupElements))
-                {
-                    $arrAllowedGroupElements[$objElements->id] = array();
-                    foreach($arrElements as $strElement)
-                    {
-                        if( !in_array($strElement, $arrContentGroupElements) )
-                        {
-                            $arrAllowedGroupElements[$objElements->id][] = $strElement;
-                        }
-                    }
+            $arrElements = array();
 
-                    $strGroupElements = serialize($arrAllowedGroupElements[$objElements->id]);
-                    $objUpdateGroup = $this->Database->prepare("UPDATE tl_user_group SET elements=? WHERE id=?")->execute($strGroupElements, $objElements->id);
+            foreach ($GLOBALS['TL_CTE'] as $k => $v) {
+                foreach (array_keys($v) as $kk) {
+                    $arrElements[] = $kk;
                 }
             }
-
-            $this->Database->execute("ALTER TABLE tl_user_group DROP contentelements");
-
         }
 
-
+        return $arrElements;
     }
 }
 
-$objRunonce = new CeAccessRunonce();
-$objRunonce->run();
+CeAccessRunonce::run();
