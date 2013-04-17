@@ -33,6 +33,6 @@
  */
 ClassLoader::addClasses(array
 (
-	'CeAccess' => 'system/modules/ce-access/CeAccess.php',
+    'CeAccess' => 'system/modules/ce-access/CeAccess.php',
 ));
 

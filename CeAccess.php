@@ -30,172 +30,172 @@
 class CeAccess extends Backend
 {
 
-	/**
-	 * Return all content elements as array
-	 *
-	 * @access	public
-	 * @return	array
-	 */
-	public function getContentElements()
-	{
-		$arrElements = array();
+    /**
+     * Return all content elements as array
+     *
+     * @access    public
+     * @return    array
+     */
+    public function getContentElements()
+    {
+        $arrElements = array();
 
-		foreach ($GLOBALS['TL_CTE'] as $k=>$v)
-		{
-			foreach (array_keys($v) as $kk)
-			{
-				$arrElements[] = $kk;
-			}
-		}
+        foreach ($GLOBALS['TL_CTE'] as $k=>$v)
+        {
+            foreach (array_keys($v) as $kk)
+            {
+                $arrElements[] = $kk;
+            }
+        }
 
-		return $arrElements;
-	}
-
-
-	/**
-	 * Remove available content elements
-	 *
-	 * @access	public
-	 * @param	object
-	 * @return	void
-	 */
-	public function filterContentElements($dc)
-	{
-		if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
-			return;
-
-		$this->Import('BackendUser', 'User');
-
-		if ($this->User->isAdmin)
-			return;
-
-		$arrElements = deserialize($this->User->elements, true);
-		$arrGroups = $this->User->groups;
-
-		// check if we have groups or only the user attributes
-		if (count($arrGroups) > 0 && $arrGroups[0] != '')
-		{
-			$objGroups = $this->Database->execute("SELECT * FROM tl_user_group WHERE id IN (" . implode(',', $arrGroups) . ")");
-
-			while( $objGroups->next() )
-			{
-				// add allowed elements
-				$arrAllowedGroupElements = deserialize($objGroups->elements);
-
-				if (is_array($arrAllowedGroupElements))
-				{
-					$arrElements = array_merge($arrElements, $arrAllowedGroupElements);
-				}
-			}
-		}
-
-		array_unique($arrElements);
-		$this->User->elements = $arrElements;
-
-		foreach( $arrElements as $element )
-		{
-			foreach( $GLOBALS['TL_CTE'] as $group => $v )
-			{
-				if (!isset($GLOBALS['TL_CTE'][$group][$element]))
-					unset($GLOBALS['TL_CTE'][$group][$element]);
-
-				if (!count($GLOBALS['TL_CTE'][$group]))
-					unset($GLOBALS['TL_CTE'][$group]);
-			}
-		}
-
-		// No content elements possible, disable new elements
-		if (!count($GLOBALS['TL_CTE']))
-		{
-			$GLOBALS['TL_DCA']['tl_content']['config']['closed'] = true;
-			$GLOBALS['TL_DCA']['tl_content']['list']['sorting']['panelLayout'] = '';
-		}
-
-		// Default element has been hidden
-		elseif (in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements))
-		{
-			reset($GLOBALS['TL_CTE']);
-			$GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($GLOBALS['TL_CTE']));
-			$GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($GLOBALS['TL_CTE']))];
-		}
+        return $arrElements;
+    }
 
 
-		$session = $this->Session->getData();
+    /**
+     * Remove available content elements
+     *
+     * @access    public
+     * @param    object
+     * @return    void
+     */
+    public function filterContentElements($dc)
+    {
+        if ($this->Input->get('act') == '' || $this->Input->get('act') == 'select')
+            return;
 
-		// Set allowed content element IDs (edit multiple)
-		if (is_array($session['CURRENT']['IDS']) && count($session['CURRENT']['IDS']))
-		{
-			$session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
-		}
+        $this->Import('BackendUser', 'User');
 
-		// Set allowed clipboard IDs
-		if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
-		{
-			$session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
-		}
+        if ($this->User->isAdmin)
+            return;
 
-		// Overwrite session
-		$this->Session->setData($session);
+        $arrElements = deserialize($this->User->elements, true);
+        $arrGroups = $this->User->groups;
+
+        // check if we have groups or only the user attributes
+        if (count($arrGroups) > 0 && $arrGroups[0] != '')
+        {
+            $objGroups = $this->Database->execute("SELECT * FROM tl_user_group WHERE id IN (" . implode(',', $arrGroups) . ")");
+
+            while( $objGroups->next() )
+            {
+                // add allowed elements
+                $arrAllowedGroupElements = deserialize($objGroups->elements);
+
+                if (is_array($arrAllowedGroupElements))
+                {
+                    $arrElements = array_merge($arrElements, $arrAllowedGroupElements);
+                }
+            }
+        }
+
+        array_unique($arrElements);
+        $this->User->elements = $arrElements;
+
+        foreach( $arrElements as $element )
+        {
+            foreach( $GLOBALS['TL_CTE'] as $group => $v )
+            {
+                if (!isset($GLOBALS['TL_CTE'][$group][$element]))
+                    unset($GLOBALS['TL_CTE'][$group][$element]);
+
+                if (!count($GLOBALS['TL_CTE'][$group]))
+                    unset($GLOBALS['TL_CTE'][$group]);
+            }
+        }
+
+        // No content elements possible, disable new elements
+        if (!count($GLOBALS['TL_CTE']))
+        {
+            $GLOBALS['TL_DCA']['tl_content']['config']['closed'] = true;
+            $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['panelLayout'] = '';
+        }
+
+        // Default element has been hidden
+        elseif (in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements))
+        {
+            reset($GLOBALS['TL_CTE']);
+            $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($GLOBALS['TL_CTE']));
+            $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($GLOBALS['TL_CTE']))];
+        }
+
+
+        $session = $this->Session->getData();
+
+        // Set allowed content element IDs (edit multiple)
+        if (is_array($session['CURRENT']['IDS']) && count($session['CURRENT']['IDS']))
+        {
+            $session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+        }
+
+        // Set allowed clipboard IDs
+        if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
+        {
+            $session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type NOT IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+        }
+
+        // Overwrite session
+        $this->Session->setData($session);
 
         if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
-		{
-			$objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
-										 ->limit(1)
-										 ->execute($dc->id);
+        {
+            $objElement = $this->Database->prepare("SELECT * FROM tl_content WHERE id=?")
+                                         ->limit(1)
+                                         ->execute($dc->id);
 
-			if ($objElement->numRows && in_array($objElement->type, $arrElements))
-			{
-				$this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
-				$this->redirect($this->Environment->script.'?act=error');
-			}
-		}
-	}
-
-
-	/**
-	 * Hide buttons for disabled content elements
-	 *
-	 * @access	public
-	 * @param	array
-	 * @param	string
-	 * @param	string
-	 * @param	string
-	 * @param	string
-	 * @param	string
-	 * @return	string
-	 */
-	public function hideButton($row, $href, $label, $title, $icon, $attributes)
-	{
-		$this->Import('BackendUser', 'User');
-
-		return ($this->User->isAdmin || !in_array($row['type'], $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
-	}
+            if ($objElement->numRows && in_array($objElement->type, $arrElements))
+            {
+                $this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
+                $this->redirect($this->Environment->script.'?act=error');
+            }
+        }
+    }
 
 
-	public function deleteButton($row, $href, $label, $title, $icon, $attributes)
-	{
-		$this->Import('BackendUser', 'User');
+    /**
+     * Hide buttons for disabled content elements
+     *
+     * @access    public
+     * @param    array
+     * @param    string
+     * @param    string
+     * @param    string
+     * @param    string
+     * @param    string
+     * @return    string
+     */
+    public function hideButton($row, $href, $label, $title, $icon, $attributes)
+    {
+        $this->Import('BackendUser', 'User');
 
-		if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
-		{
-			$objCallback = new tl_content();
-			return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
-		}
-
-		return '';
-	}
+        return ($this->User->isAdmin || !in_array($row['type'], $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
+    }
 
 
-	public function toggleButton($row, $href, $label, $title, $icon, $attributes)
-	{
-		$this->Import('BackendUser', 'User');
+    public function deleteButton($row, $href, $label, $title, $icon, $attributes)
+    {
+        $this->Import('BackendUser', 'User');
 
-		if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
-		{
-			$objCallback = new tl_content();
-			return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
-		}
+        if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
+        {
+            $objCallback = new tl_content();
+            return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
+        }
 
-		return '';
-	}
+        return '';
+    }
+
+
+    public function toggleButton($row, $href, $label, $title, $icon, $attributes)
+    {
+        $this->Import('BackendUser', 'User');
+
+        if ($this->User->isAdmin || !in_array($row['type'], $this->User->elements))
+        {
+            $objCallback = new tl_content();
+            return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
+        }
+
+        return '';
+    }
 }

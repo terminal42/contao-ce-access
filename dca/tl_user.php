@@ -40,10 +40,10 @@ $GLOBALS['TL_DCA']['tl_user']['palettes']['custom'] = preg_replace('@([,;])(modu
  */
 $GLOBALS['TL_DCA']['tl_user']['fields']['elements'] = array
 (
-	'label'                   => &$GLOBALS['TL_LANG']['tl_user']['elements'],
-	'exclude'                 => true,
-	'inputType'               => 'checkbox',
-	'options_callback'        => array('CeAccess', 'getContentElements'),
-	'reference'               => &$GLOBALS['TL_LANG']['CTE'],
-	'eval'                    => array('multiple'=>true),
+    'label'                   => &$GLOBALS['TL_LANG']['tl_user']['elements'],
+    'exclude'                 => true,
+    'inputType'               => 'checkbox',
+    'options_callback'        => array('CeAccess', 'getContentElements'),
+    'reference'               => &$GLOBALS['TL_LANG']['CTE'],
+    'eval'                    => array('multiple'=>true),
 );
