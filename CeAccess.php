@@ -164,8 +164,10 @@ class CeAccess extends Backend
             $arrElements = array();
 
             foreach ($GLOBALS['TL_CTE'] as $k => $v) {
+                $arrElements[$k] = array();
+
                 foreach (array_keys($v) as $kk) {
-                    $arrElements[] = $kk;
+                    $arrElements[$k][] = $kk;
                 }
             }
         }
