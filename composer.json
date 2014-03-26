@@ -1,0 +1,28 @@
+{
+    "name":"terminal42/contao-ce-access",
+    "description":"Limit user access to content elements for Contao Open Source CMS",
+    "keywords":["contao", "access", "content elements"],
+    "type":"contao-module",
+    "license":"LGPL-3.0+",
+    "authors":[
+        {
+            "name":"terminal42 gmbh",
+            "homepage":"http://terminal42.ch"
+        }
+    ],
+    "require":{
+        "php":">=5.3.2",
+        "contao/core":">=2.11,<4",
+        "contao-community-alliance/composer-installer":"*"
+    },
+    "replace": {
+        "contao-legacy/ce-access": "self.version"
+    },
+    "extra":{
+        "contao": {
+            "sources":{
+                "": "system/modules/ce-access"
+            }
+        }
+    }
+}
