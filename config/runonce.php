@@ -47,6 +47,9 @@ class CeAccessRunonce extends Controller
 
         $objCeAccess->invertElements('tl_user');
         $objCeAccess->invertElements('tl_user_group');
+
+        $objCeAccess->groupElements('tl_user');
+        $objCeAccess->groupElements('tl_user_group');
     }
 
 
@@ -80,6 +83,54 @@ class CeAccessRunonce extends Controller
 
             $this->log('Inverted access logic for content elements in ' . $strTable, __METHOD__, TL_ACCESS);
         }
+    }
+
+    /**
+     * Group records from the old format "text" to new "article.text"
+     *
+     * @param string $table
+     */
+    private function groupElements($table)
+    {
+        $records = \Database::getInstance()->execute("SELECT id, elements FROM $table");
+
+        while ($records->next()) {
+            $elements = deserialize($records->elements, true);
+
+            // The format is already correct
+            if (empty($elements) || strpos($elements[0], '.') !== false) {
+                continue;
+            }
+
+            $modules = array();
+
+            // Gather the modules
+            foreach ($GLOBALS['BE_MOD'] as $modules) {
+                foreach ($modules as $moduleName => $moduleConfig) {
+
+                    // Skip modules without tl_content table
+                    if (!in_array('tl_content', (array) $moduleConfig['tables'])) {
+                        continue;
+                    }
+
+                    $modules[] = $moduleName;
+                }
+            }
+
+            // Update the elements
+            foreach ($elements as $key => $element) {
+                foreach ($modules as $module) {
+                    $elements[] = $module . '.' . $element;
+                }
+
+                unset($elements[$key]);
+            }
+
+            \Database::getInstance()->prepare("UPDATE $table SET elements=? WHERE id=?")
+                ->execute(serialize($elements), $records->id);
+        }
+
+        \System::log('Grouped the content elements in ' . $table, __METHOD__, TL_ACCESS);
     }
 }
 
