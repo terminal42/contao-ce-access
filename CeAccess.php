@@ -50,7 +50,17 @@ class CeAccess extends Backend
         if ($this->User->isAdmin)
             return;
 
-        $arrElements = deserialize($this->User->elements, true);
+        $arrElements = array();
+
+        // Prepare the elements
+        foreach (deserialize($this->User->elements, true) as $item) {
+            list($module, $element) = explode('.', $item);
+
+            if ($module == \Input::get('do')) {
+                $arrElements[] = $element;
+            }
+        }
+
         $arrKeys = array_flip($arrElements);
         $arrConfig = $GLOBALS['TL_CTE'];
 
@@ -153,25 +163,40 @@ class CeAccess extends Backend
 
     /**
      * Return all content elements as array
-     * @return    array
+     *
+     * @return array
      */
     public static function getContentElements()
     {
-        static $arrElements;
+        static $elements;
 
-        if (null === $arrElements) {
+        if (!is_array($elements)) {
+            $elements = array();
 
-            $arrElements = array();
+            // Parse modules
+            foreach ($GLOBALS['BE_MOD'] as $modules) {
+                foreach ($modules as $moduleName => $moduleConfig) {
 
-            foreach ($GLOBALS['TL_CTE'] as $k => $v) {
-                $arrElements[$k] = array();
+                    // Skip modules without tl_content table
+                    if (!in_array('tl_content', (array) $moduleConfig['tables'])) {
+                        continue;
+                    }
 
-                foreach (array_keys($v) as $kk) {
-                    $arrElements[$k][] = $kk;
+                    $moduleGroup = $GLOBALS['TL_LANG']['MOD'][$moduleName][0];
+
+                    // Parse elements
+                    foreach ($GLOBALS['TL_CTE'] as $elementGroup => $elementItems) {
+                        foreach (array_keys($elementItems) as $element) {
+                            $elements[$moduleGroup][$moduleName . '.' . $element] = sprintf(
+                                '<span style="color:#b3b3b3">[%s]</span> %s',
+                                $GLOBALS['TL_LANG']['CTE'][$elementGroup],
+                                $GLOBALS['TL_LANG']['CTE'][$element][0]);
+                        }
+                    }
                 }
             }
         }
 
-        return $arrElements;
+        return $elements;
     }
 }
