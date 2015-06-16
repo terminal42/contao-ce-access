@@ -50,19 +50,9 @@ class CeAccess extends Backend
         if ($this->User->isAdmin)
             return;
 
-        $arrElements = array();
-
-        // Prepare the elements
-        foreach (deserialize($this->User->elements, true) as $item) {
-            list($module, $element) = explode('.', $item);
-
-            if ($module == \Input::get('do')) {
-                $arrElements[] = $element;
-            }
-        }
-
-        $arrKeys = array_flip($arrElements);
-        $arrConfig = $GLOBALS['TL_CTE'];
+        $arrElements = $this->getAllowedElements();
+        $arrKeys     = array_flip($arrElements);
+        $arrConfig   = $GLOBALS['TL_CTE'];
 
         foreach ($arrConfig as $group => $v)
         {
@@ -128,7 +118,7 @@ class CeAccess extends Backend
      */
     public function hideButton($row, $href, $label, $title, $icon, $attributes)
     {
-        return ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
+        return ($this->User->isAdmin || in_array($row['type'], $this->getAllowedElements())) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
     }
 
 
@@ -137,7 +127,7 @@ class CeAccess extends Backend
      */
     public function deleteButton($row, $href, $label, $title, $icon, $attributes)
     {
-        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
+        if ($this->User->isAdmin || in_array($row['type'], $this->getAllowedElements()))
         {
             $objCallback = new tl_content();
             return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
@@ -152,7 +142,7 @@ class CeAccess extends Backend
      */
     public function toggleButton($row, $href, $label, $title, $icon, $attributes)
     {
-        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
+        if ($this->User->isAdmin || in_array($row['type'], $this->getAllowedElements()))
         {
             $objCallback = new tl_content();
             return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
@@ -194,6 +184,26 @@ class CeAccess extends Backend
                         }
                     }
                 }
+            }
+        }
+
+        return $elements;
+    }
+
+    /**
+     * Returns a list of allowed content element types.
+     *
+     * @return array
+     */
+    private function getAllowedElements()
+    {
+        $elements = [];
+
+        foreach (deserialize(\BackendUser::getInstance()->elements, true) as $item) {
+            list($module, $element) = explode('.', $item, 2);
+
+            if ($module == \Input::get('do')) {
+                $elements[] = $element;
             }
         }
 
