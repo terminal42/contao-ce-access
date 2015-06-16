@@ -105,8 +105,8 @@ class CeAccessRunonce extends Controller
             $modules = array();
 
             // Gather the modules
-            foreach ($GLOBALS['BE_MOD'] as $modules) {
-                foreach ($modules as $moduleName => $moduleConfig) {
+            foreach ($GLOBALS['BE_MOD'] as $moduleConfigs) {
+                foreach ($moduleConfigs as $moduleName => $moduleConfig) {
 
                     // Skip modules without tl_content table
                     if (!in_array('tl_content', (array) $moduleConfig['tables'])) {
