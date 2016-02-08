@@ -19,6 +19,9 @@
         "contao-legacy/ce-access": "self.version"
     },
     "extra":{
+        "branch-alias": {
+            "dev-develop": "2.1.x-dev"
+        },
         "contao": {
             "sources":{
                 "": "system/modules/ce-access"
