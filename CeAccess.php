@@ -125,12 +125,11 @@ class CeAccess extends Backend
     /**
      * Hide delete button for disabled content elements
      */
-    public function deleteButton($row, $href, $label, $title, $icon, $attributes)
+    public function deleteButton($row)
     {
         if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
         {
-            $objCallback = new tl_content();
-            return $objCallback->deleteElement($row, $href, $label, $title, $icon, $attributes);
+            return call_user_func_array(['tl_content', 'deleteElement'], func_get_args());
         }
 
         return '';
@@ -144,8 +143,7 @@ class CeAccess extends Backend
     {
         if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
         {
-            $objCallback = new tl_content();
-            return $objCallback->toggleIcon($row, $href, $label, $title, $icon, $attributes);
+            return call_user_func_array(['tl_content', 'toggleIcon'], func_get_args());
         }
 
         return '';
