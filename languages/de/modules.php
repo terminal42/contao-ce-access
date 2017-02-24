@@ -9,7 +9,6 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
 /**
  * Extension folder
  */

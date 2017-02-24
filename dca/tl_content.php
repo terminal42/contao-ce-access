@@ -9,12 +9,10 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
 /**
  * Configuration
  */
 $GLOBALS['TL_DCA']['tl_content']['config']['onload_callback'][] = array('CeAccess', 'filterContentElements');
-
 
 /**
  * Operations

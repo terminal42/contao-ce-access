@@ -9,8 +9,7 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
 /**
  * Extension folder
  */
-$GLOBALS['TL_LANG']['MOD']['ce-access']        = array('Content Element Access Rights', 'Enable individual content elements for certain users/groups.');
+$GLOBALS['TL_LANG']['MOD']['ce-access'] = array('Content Element Access Rights', 'Enable individual content elements for certain users/groups.');

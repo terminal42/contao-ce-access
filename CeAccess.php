@@ -9,36 +9,24 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
-class CeAccess extends Backend
+class CeAccess
 {
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->import('BackendUser', 'User');
-    }
-
-
     /**
-     * Remove available content elements
+     * Remove available content elements.
      *
-     * @access    public
-     * @param     object
-     * @return    void
+     * @param \DataContainer $dc
      */
     public function filterContentElements($dc)
     {
-        if ($this->User->isAdmin)
+        if (\BackendUser::getInstance()->isAdmin) {
             return;
+        }
 
-        $arrElements = deserialize($this->User->elements, true);
+        $arrElements = deserialize(\BackendUser::getInstance()->elements, true);
         $arrKeys = array_flip($arrElements);
         $arrConfig = $GLOBALS['TL_CTE'];
 
-        foreach ($arrConfig as $group => $v)
-        {
+        foreach ($arrConfig as $group => $v) {
             $arrConfig[$group] = array_intersect_key($arrConfig[$group], $arrKeys);
 
             if (empty($arrConfig[$group])) {
@@ -55,99 +43,147 @@ class CeAccess extends Backend
         }
 
         // Default element has been hidden
-        elseif (!in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements)) {
+        elseif (!in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements, true)) {
             reset($arrConfig);
             $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($arrConfig));
             $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
         }
 
-        if ($this->Input->get('act') != '' && $this->Input->get('act') != 'select') {
-
+        if (\Input::get('act') !== '' && \Input::get('act') !== 'select') {
             $GLOBALS['TL_CTE'] = $arrConfig;
-            $session = $this->Session->getData();
+            $session = \Session::getInstance()->getData();
 
             // Set allowed content element IDs (edit multiple)
-            if (!empty($session['CURRENT']['IDS']) && is_array($session['CURRENT']['IDS']))
-            {
-                $session['CURRENT']['IDS'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CURRENT']['IDS']) . ") AND type IN ('" . implode("','", $arrElements) . "')")->fetchEach('id');
+            if (!empty($session['CURRENT']['IDS']) && is_array($session['CURRENT']['IDS'])) {
+                $session['CURRENT']['IDS'] = \Database::getInstance()->execute('
+                    SELECT id 
+                    FROM tl_content 
+                    WHERE id IN ('.implode(',', $session['CURRENT']['IDS']).") 
+                        AND type IN ('".implode("','", $arrElements)."')"
+                )->fetchEach('id');
             }
 
             // Set allowed clipboard IDs
-            if (isset($session['CLIPBOARD']['tl_content']) && is_array($session['CLIPBOARD']['tl_content']['id']) && count($session['CLIPBOARD']['tl_content']['id']))
-            {
-                $session['CLIPBOARD']['tl_content']['id'] = $this->Database->execute("SELECT id FROM tl_content WHERE id IN (" . implode(',', $session['CLIPBOARD']['tl_content']['id']) . ") AND type IN ('" . implode("','", $arrElements) . "') ORDER BY sorting")->fetchEach('id');
+            if (isset($session['CLIPBOARD']['tl_content'])
+                && is_array($session['CLIPBOARD']['tl_content']['id'])
+                && count($session['CLIPBOARD']['tl_content']['id'])
+            ) {
+                $session['CLIPBOARD']['tl_content']['id'] = \Database::getInstance()
+                    ->execute('
+                        SELECT id FROM tl_content 
+                        WHERE id IN ('.implode(',', $session['CLIPBOARD']['tl_content']['id']).") 
+                            AND type IN ('".implode("','", $arrElements)."') 
+                        ORDER BY sorting
+                    ")
+                    ->fetchEach('id')
+                ;
             }
 
             // Overwrite session
-            $this->Session->setData($session);
+            \Session::getInstance()->setData($session);
 
-            if (!in_array($this->Input->get('act'), array('show', 'create', 'select', 'editAll')) && !($this->Input->get('act') == 'paste' && $this->Input->get('mode') == 'create'))
-            {
-                $objElement = $this->Database->prepare("SELECT type FROM tl_content WHERE id=?")
-                                             ->limit(1)
-                                             ->execute($dc->id);
+            if (!in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
+                && !(\Input::get('act') === 'paste' && \Input::get('mode') === 'create')
+            ) {
+                $objElement = \Database::getInstance()
+                    ->prepare('SELECT type FROM tl_content WHERE id=?')
+                    ->execute($dc->id)
+                ;
 
-                if ($objElement->numRows && !in_array($objElement->type, $arrElements)) {
-                    $this->log('Attempt to access restricted content element "' . $objElement->type . '"', 'CeAccess filterContentElements()', TL_ACCESS);
-                    $this->redirect($this->Environment->script.'?act=error');
+                if ($objElement->numRows && !in_array($objElement->type, $arrElements, true)) {
+                    \System::log(
+                        'Attempt to access restricted content element "'.$objElement->type.'"',
+                        'CeAccess filterContentElements()',
+                        TL_ACCESS
+                    );
+
+                    \Controller::redirect(\Environment::get('script').'?act=error');
                 }
             }
         }
     }
 
-
     /**
-     * Hide buttons for disabled content elements
+     * Hide buttons for disabled content elements.
+     *
+     * @param mixed $row
+     * @param mixed $href
+     * @param mixed $label
+     * @param mixed $title
+     * @param mixed $icon
+     * @param mixed $attributes
+     *
+     * @return string
      */
     public function hideButton($row, $href, $label, $title, $icon, $attributes)
     {
-        return ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements)) ? '<a href="'.$this->addToUrl($href.'&amp;id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ' : '';
+        if (!\BackendUser::getInstance()->isAdmin
+            && !in_array($row['type'], (array) \BackendUser::getInstance()->elements, true)
+        ) {
+            return '';
+        }
+
+        return sprintf(
+            '<a href="%s" title="%s"%s>%s</a> ',
+            \Backend::addToUrl($href.'&amp;id='.$row['id']),
+            specialchars($title),
+            $attributes,
+            \Image::getHtml($icon, $label)
+        );
     }
 
-
     /**
-     * Hide delete button for disabled content elements
+     * Hide delete button for disabled content elements.
+     *
+     * @param array $row
+     *
+     * @return string
      */
     public function deleteButton($row)
     {
-        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
-        {
-            return call_user_func_array(['tl_content', 'deleteElement'], func_get_args());
+        if (\BackendUser::getInstance()->isAdmin
+            || in_array($row['type'], (array) \BackendUser::getInstance()->elements, true)
+        ) {
+            return call_user_func_array(array('tl_content', 'deleteElement'), func_get_args());
         }
 
         return '';
     }
 
-
     /**
-     * Hide toggle button for disabled content elements
+     * Hide toggle button for disabled content elements.
+     *
+     * @param array $row
+     *
+     * @return string
      */
-    public function toggleButton($row, $href, $label, $title, $icon, $attributes)
+    public function toggleButton($row)
     {
-        if ($this->User->isAdmin || in_array($row['type'], (array) $this->User->elements))
-        {
-            return call_user_func_array(['tl_content', 'toggleIcon'], func_get_args());
+        if (\BackendUser::getInstance()->isAdmin
+            || in_array($row['type'], (array) \BackendUser::getInstance()->elements, true)
+        ) {
+            return call_user_func_array(array('tl_content', 'toggleIcon'), func_get_args());
         }
 
         return '';
     }
 
     /**
-     * Return all content elements as array
-     * @return    array
+     * Return all content elements as array.
+     *
+     * @return array
      */
     public static function getContentElements()
     {
         static $arrElements;
 
         if (null === $arrElements) {
-
             $arrElements = array();
 
             foreach ($GLOBALS['TL_CTE'] as $k => $v) {
                 $arrElements[$k] = array();
 
-                foreach (array_keys($v) as $kk) {
+                foreach ($v as $kk => $vv) {
                     $arrElements[$k][] = $kk;
                 }
             }

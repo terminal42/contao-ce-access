@@ -9,7 +9,6 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
 /**
  * Palettes
  */
@@ -18,7 +17,6 @@ $GLOBALS['TL_DCA']['tl_user_group']['palettes']['default'] = preg_replace('@([,;
 /**
  * Fields
  */
-
 $GLOBALS['TL_DCA']['tl_user_group']['fields']['elements'] = array
 (
     'label'                   => &$GLOBALS['TL_LANG']['tl_user_group']['elements'],

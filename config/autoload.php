@@ -9,13 +9,9 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
-
 /**
  * Register the classes
  */
-ClassLoader::addClasses(array
-(
+ClassLoader::addClasses(array(
     'CeAccess' => 'system/modules/ce-access/CeAccess.php',
 ));
-

@@ -9,14 +9,11 @@
  * @link       http://github.com/terminal42/contao-ce-access
  */
 
-
 /**
  * Palettes
  */
-
 $GLOBALS['TL_DCA']['tl_user']['palettes']['extend'] = preg_replace('@([,;])(modules[,;])@', '$1elements,$2', $GLOBALS['TL_DCA']['tl_user']['palettes']['extend']);
 $GLOBALS['TL_DCA']['tl_user']['palettes']['custom'] = preg_replace('@([,;])(modules[,;])@', '$1elements,$2', $GLOBALS['TL_DCA']['tl_user']['palettes']['custom']);
-
 
 /**
  * Fields
