@@ -15,6 +15,10 @@
         "contao/core-bundle":"~3.2 || ~4.1",
         "contao-community-alliance/composer-plugin":"~2.4 || ~3.0"
     },
+    "require-dev": {
+        "contao/core": "3.2.*",
+        "friendsofphp/php-cs-fixer": "^2.1"
+    },
     "replace": {
         "contao-legacy/ce-access": "self.version"
     },
