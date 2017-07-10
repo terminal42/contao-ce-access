@@ -144,7 +144,7 @@ class CeAccess
         if (\BackendUser::getInstance()->isAdmin
             || in_array($row['type'], (array) \BackendUser::getInstance()->elements, true)
         ) {
-            return call_user_func_array(array('tl_content', 'deleteElement'), func_get_args());
+            return call_user_func_array(array(new tl_content(), 'deleteElement'), func_get_args());
         }
 
         return '';
@@ -162,7 +162,7 @@ class CeAccess
         if (\BackendUser::getInstance()->isAdmin
             || in_array($row['type'], (array) \BackendUser::getInstance()->elements, true)
         ) {
-            return call_user_func_array(array('tl_content', 'toggleIcon'), func_get_args());
+            return call_user_func_array(array(new tl_content(), 'toggleIcon'), func_get_args());
         }
 
         return '';
