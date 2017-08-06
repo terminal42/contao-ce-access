@@ -49,7 +49,7 @@ class CeAccess
             $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
         }
 
-        if (\Input::get('act') !== '' && \Input::get('act') !== 'select') {
+        if (\Input::get('act') && !in_array(\Input::get('act'), array('', 'select'))) {
             $GLOBALS['TL_CTE'] = $arrConfig;
             $session = \Session::getInstance()->getData();
 
@@ -83,7 +83,7 @@ class CeAccess
             \Session::getInstance()->setData($session);
 
             if (!in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
-                && !(\Input::get('act') === 'paste' && \Input::get('mode') === 'create')
+                && !(\Input::get('act') == 'paste' && \Input::get('mode') == 'create')
             ) {
                 $objElement = \Database::getInstance()
                     ->prepare('SELECT type FROM tl_content WHERE id=?')
