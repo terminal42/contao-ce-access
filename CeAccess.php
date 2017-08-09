@@ -21,6 +21,8 @@ class CeAccess
         if (\BackendUser::getInstance()->isAdmin) {
             return;
         }
+log_message('type: ' . gettype($_GET['acts']), 'ceaccess.log');
+log_message('value: ' . $_GET['acts'], 'ceaccess.log');
 
         $arrElements = deserialize(\BackendUser::getInstance()->elements, true);
         $arrKeys = array_flip($arrElements);
@@ -49,7 +51,7 @@ class CeAccess
             $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
         }
 
-        if (!empty(\Input::get('act')) && (string) \Input::get('act') !== '' && (string) \Input::get('act') !== 'select') {
+        if (\Input::get('act') && \Input::get('act') !== '' && \Input::get('act') !== 'select') {
             $GLOBALS['TL_CTE'] = $arrConfig;
             $session = \Session::getInstance()->getData();
 
@@ -83,7 +85,7 @@ class CeAccess
             \Session::getInstance()->setData($session);
 
             if (!in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
-                && !((string) \Input::get('act') === 'paste' && (string) \Input::get('mode') === 'create')
+                && !(\Input::get('act') === 'paste' && \Input::get('mode') === 'create')
             ) {
                 $objElement = \Database::getInstance()
                     ->prepare('SELECT type FROM tl_content WHERE id=?')
