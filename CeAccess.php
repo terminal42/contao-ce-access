@@ -21,8 +21,6 @@ class CeAccess
         if (\BackendUser::getInstance()->isAdmin) {
             return;
         }
-log_message('type: ' . gettype($_GET['acts']), 'ceaccess.log');
-log_message('value: ' . $_GET['acts'], 'ceaccess.log');
 
         $arrElements = deserialize(\BackendUser::getInstance()->elements, true);
         $arrKeys = array_flip($arrElements);
