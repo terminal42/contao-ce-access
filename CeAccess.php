@@ -49,7 +49,7 @@ class CeAccess
             $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
         }
 
-        if (\Input::get('act') !== '' && \Input::get('act') !== 'select') {
+        if ((string) \Input::get('act') !== '' && \Input::get('act') !== 'select') {
             $GLOBALS['TL_CTE'] = $arrConfig;
             $session = \Session::getInstance()->getData();
 
