@@ -84,6 +84,7 @@ class CeAccess
 
             if (!in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
                 && !(\Input::get('act') === 'paste' && \Input::get('mode') === 'create')
+                && $dc->ptable == 'tl_content'
             ) {
                 $objElement = \Database::getInstance()
                     ->prepare('SELECT type FROM tl_content WHERE id=?')
