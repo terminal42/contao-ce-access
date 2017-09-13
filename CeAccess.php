@@ -82,7 +82,8 @@ class CeAccess
             // Overwrite session
             \Session::getInstance()->setData($session);
 
-            if (!in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
+            if (\Input::get('act') != null
+                && !in_array(\Input::get('act'), array('show', 'create', 'select', 'editAll'), true)
                 && !(\Input::get('act') === 'paste' && \Input::get('mode') === 'create')
             ) {
                 $objElement = \Database::getInstance()
