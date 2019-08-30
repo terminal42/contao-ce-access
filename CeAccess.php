@@ -179,6 +179,50 @@ class CeAccess
         return '';
     }
 
+    public static function getContentParentTables()
+    {
+        static $tables;
+
+        if (!is_array($tables)) {
+            $tables = array();
+
+            // Parse modules
+            foreach ((array) $GLOBALS['BE_MOD'] as $modules) {
+                foreach ((array) $modules as $moduleName => $moduleConfig) {
+                    $moduleTables = (array) $moduleConfig['tables'];
+                    // Skip modules without tl_content table
+                    if (!\in_array('tl_content', $moduleTables, true)) {
+                        continue;
+                    }
+
+                    $moduleGroup = $GLOBALS['TL_LANG']['MOD'][$moduleName][0];
+                    $parentTables = [];
+
+                    foreach ($moduleTables as $table) {
+                        if ('tl_content' === $table) {
+                            continue;
+                        }
+
+                        \Contao\Controller::loadDataContainer($table);
+
+                        if (isset($GLOBALS['TL_DCA'][$table]['config']['ctable']) && \in_array('tl_content', (array) $GLOBALS['TL_DCA'][$table]['config']['ctable'])) {
+                            $parentTables[] = $table;
+                        }
+                    }
+
+                    $tableCount = \count($parentTables);
+                    if (0 !== $tableCount) {
+                        foreach ($parentTables as $table) {
+                            $tables[$table] = $moduleGroup.($tableCount > 1 ? (' ('.$table.')') : '');
+                        }
+                    }
+                }
+            }
+        }
+
+        return $tables;
+    }
+
     /**
      * Return all content elements as array
      *
@@ -191,27 +235,12 @@ class CeAccess
         if (!is_array($elements)) {
             $elements = array();
 
-            // Parse modules
-            foreach ((array) $GLOBALS['BE_MOD'] as $modules) {
-                foreach ((array) $modules as $moduleName => $moduleConfig) {
+            // Parse elements
+            foreach ((array) $GLOBALS['TL_CTE'] as $elementGroup => $elementItems) {
+                $groupLabel = $GLOBALS['TL_LANG']['CTE'][$elementGroup] ?? $elementGroup;
 
-                    // Skip modules without tl_content table
-                    if (!in_array('tl_content', (array) $moduleConfig['tables'], true)) {
-                        continue;
-                    }
-
-                    $moduleGroup = $GLOBALS['TL_LANG']['MOD'][$moduleName][0];
-
-                    // Parse elements
-                    foreach ((array) $GLOBALS['TL_CTE'] as $elementGroup => $elementItems) {
-                        foreach ((array) $elementItems as $element => $class) {
-                            $elements[$moduleGroup][$moduleName . '.' . $element] = sprintf(
-                                '<span style="color:#b3b3b3">[%s]</span> %s',
-                                $GLOBALS['TL_LANG']['CTE'][$elementGroup],
-                                $GLOBALS['TL_LANG']['CTE'][$element][0]
-                            );
-                        }
-                    }
+                foreach ((array) $elementItems as $element => $class) {
+                    $elements[$groupLabel][$element] = $GLOBALS['TL_LANG']['CTE'][$element][0];
                 }
             }
         }
