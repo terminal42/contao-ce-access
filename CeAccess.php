@@ -44,9 +44,14 @@ class CeAccess
 
         // Default element has been hidden
         elseif (!in_array($GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'], $arrElements, true)) {
-            reset($arrConfig);
-            $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = @key(@current($arrConfig));
-            $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][@key(@current($arrConfig))];
+            if (\in_array('text', $arrElements)) {
+                $default = 'text';
+            } else {
+                $default = @key(@current($arrConfig));
+            }
+
+            $GLOBALS['TL_DCA']['tl_content']['fields']['type']['default'] = $default;
+            $GLOBALS['TL_DCA']['tl_content']['palettes']['default'] = $GLOBALS['TL_DCA']['tl_content']['palettes'][$default];
         }
 
         if ('' !== (string) \Input::get('act') && \Input::get('act') !== 'select') {
